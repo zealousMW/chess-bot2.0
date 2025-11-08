@@ -33,6 +33,31 @@ class App:
         self.exec_btn = tk.Button(frm, text='Execute move', command=self.execute_move)
         self.exec_btn.grid(row=0, column=3, padx=5, pady=5)
 
+        # Engine settings frame
+        settings_frm = tk.Frame(root)
+        settings_frm.pack(padx=10, pady=(0, 10), fill=tk.X)
+
+        tk.Label(settings_frm, text='Engine Hash (MB):').grid(row=0, column=0, sticky='e')
+        self.hash_var = tk.StringVar(value=str(self.bot.engine.get_params().get('Hash', 1024)))
+        self.hash_entry = tk.Entry(settings_frm, textvariable=self.hash_var, width=8)
+        self.hash_entry.grid(row=0, column=1, padx=4)
+
+        tk.Label(settings_frm, text='Threads:').grid(row=0, column=2, sticky='e')
+        self.threads_var = tk.StringVar(value=str(self.bot.engine.get_params().get('Threads', 2)))
+        self.threads_entry = tk.Entry(settings_frm, textvariable=self.threads_var, width=4)
+        self.threads_entry.grid(row=0, column=3, padx=4)
+
+        self.apply_engine_btn = tk.Button(settings_frm, text='Apply Engine Settings', command=self.apply_engine_settings)
+        self.apply_engine_btn.grid(row=0, column=4, padx=8)
+
+        # Side (white/black) selection
+        tk.Label(settings_frm, text='Play as:').grid(row=1, column=0, sticky='e')
+        self.side_var = tk.StringVar(value='w')
+        self.white_rb = tk.Radiobutton(settings_frm, text='White', variable=self.side_var, value='w')
+        self.white_rb.grid(row=1, column=1, sticky='w')
+        self.black_rb = tk.Radiobutton(settings_frm, text='Black', variable=self.side_var, value='b')
+        self.black_rb.grid(row=1, column=2, sticky='w')
+
         self.text = scrolledtext.ScrolledText(root, width=60, height=20)
         self.text.pack(padx=10, pady=10)
 
@@ -56,6 +81,19 @@ class App:
 
         threading.Thread(target=job, daemon=True).start()
 
+    def apply_engine_settings(self):
+        try:
+            h = int(self.hash_var.get())
+            t = int(self.threads_var.get())
+        except Exception:
+            messagebox.showerror('Invalid input', 'Hash and Threads must be integers')
+            return
+        try:
+            self.bot.engine.update_params(hash_mb=h, threads=t)
+            self.log(f'Engine parameters applied: Hash={h}MB, Threads={t}')
+        except Exception as e:
+            messagebox.showerror('Failed to apply', str(e))
+
     def detect(self):
         try:
             matrix = self.bot.capture_and_predict()
@@ -73,7 +111,9 @@ class App:
             messagebox.showinfo('No board', 'Run Detect board first')
             return
         try:
-            move = self.bot.suggest_move(self.current_fen + ' w')
+            # use selected side from UI ("w" or "b")
+            side = self.side_var.get() or 'w'
+            move = self.bot.suggest_move(self.current_fen, side=side)
             self.current_move = move
             self.log('Suggested move:', move)
         except Exception as e:

@@ -44,9 +44,15 @@ class ChessBot:
         # reuse existing helper
         return cbn.board_to_fen(matrix)
 
-    def suggest_move(self, fen: str, time_ms: int = 1000):
-        # engine expects fen with side to move; default white
-        fen_full = fen + ' w'
+    def suggest_move(self, fen: str, side: str = 'w', time_ms: int = 1000):
+        """Ask the engine for a best move. `side` should be 'w' or 'b'.
+
+        fen: board piece placement string (without side/castling info).
+        This method appends the side and passes to the engine.
+        """
+        if side not in ('w', 'b'):
+            raise ValueError("side must be 'w' or 'b'")
+        fen_full = fen + ' ' + side
         return self.engine.best_move(fen_full, time_ms=time_ms)
 
     def square_centers(self):
