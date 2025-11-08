@@ -14,6 +14,9 @@ This project combines computer vision, deep learning (Keras), and the Stockfish 
 - Calibration system to match screen coordinates
 - Minimal tests and research scripts included
 
+![ezgif-567c6f3fc1cb40d2](https://github.com/user-attachments/assets/0baecec4-85d2-41ff-b309-c0884d32799c)
+
+
 ## How it works
 
 1. Calibrate the board using the UI to mark the on-screen board region. Calibration data saved to `codes/calib.json`.
